@@ -32,8 +32,17 @@ def deleteContact(inp):
     __coll__.delete_one({"_id": inp["_id"]})
     print('contact deleted')
 
-def __getContacts__(query: dict):
-    return __coll__.find(query)
+def getContacts(query: dict):
+    cur= __coll__.find(query)
+    data=[]
+    for ele in cur:
+        data.append(ele)
+    return data
+
+def fetchSingleContactUsingId(id):
+    query={'_id':id}
+    return __coll__.find_one(query)
+
 
 def listContacts(searchField: str, searchString: str):
     if searchField == "name":
@@ -45,13 +54,14 @@ def listContacts(searchField: str, searchString: str):
 
 def fetchContactUsingName(imp: str):
     searchQuery = {"name": {"$regex": imp}}
-    return __getContacts__(searchQuery)
+    return getContacts(searchQuery)
 
 def fetchContactUsingPhone(imp: str):
     searchQuery = {"phone_number.$": {"$regex": imp}}
-    return __getContacts__(searchQuery)
+    return getContacts(searchQuery)
 
 
 def fetchContactUsingEmail(imp: str):
     searchQuery = {"email.$": {"$regex": imp}}
-    return __getContacts__(searchQuery)
+    return getContacts(searchQuery)
+
