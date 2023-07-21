@@ -1,58 +1,15 @@
+from mongoConnector import connector
 from tkinter import *
-
-from pymongo.mongo_client import MongoClient
-from pymongo.server_api import ServerApi
-
-uri = "mongodb+srv://admin:admin@cluster0.ripustv.mongodb.net/?retryWrites=true&w=majority"
-
-# Create a new client and connect to the server
-client = MongoClient(uri, server_api=ServerApi('1'))
-
-# Send a ping to confirm a successful connection
-try:
-    client.admin.command('ping')
-    print("Pinged your deployment. You successfully connected to MongoDB!")
-except Exception as e:
-    print(e)
-
-db=client["phone_book"]
-coll=db["contacts"]
 
 root = Tk()
 root.title('Phone Book')
 
-def saveContact(imp):
-    print(f'saving contact for {imp["name"]}')
-    saveContactsToMongo(imp)
-    print('contact saved')
+def save(entries):
+    data={'name': entries[0].get(), 'phone': entries[1].get(), 'email': entries[2].get(), 'dob': entries[3].get()}
+    print(data)
+    connector.saveContact(data)
 
-def ListContacts(searchField:str, searchString:str):
-    if searchField=="name":
-        return fetchContactUsingName(searchString)
-    if searchField=="phone_number":
-        return fetchContactUsingPhone(searchString)
-    if searchField=="email":
-        return fetchContactUsingEmail(searchString)
-
-def saveContactsToMongo(record):
-    coll.insert_one(record)
-
-def getContactsFromMongo(query:dict):
-    return coll.find(query)
-
-def fetchContactUsingName(imp:str):
-    searchQuery={"name":{"$regex":imp}}
-    return getContactsFromMongo(searchQuery)
-
-def fetchContactUsingPhone(imp:str):
-    searchQuery={"phone_number.$":{"$regex":imp}}
-    return getContactsFromMongo(searchQuery)
-
-def fetchContactUsingEmail(imp:str):
-    searchQuery={"email.$":{"$regex":imp}}
-    return getContactsFromMongo(searchQuery)
-def add():
-
+def newWindow():
     new_window = Toplevel(root)
     new_window.title('Add New Contacts')
     label = Label(new_window, text='New Contact', font=('times new roman', 14))
@@ -62,14 +19,11 @@ def add():
     email = Label(new_window, text='Email', font=('times new roman', 12))
     newemail = Button(new_window, text='+')
     dob = Label(new_window, text='DoB', font=('times new roman', 12))
-    e1= Entry(new_window, width=30)
-    e2= Entry(new_window, width=30)
-    e3= Entry(new_window, width=30)
-    e4= Entry(new_window, width=30)
-    data={'name':}
-    save = Button(new_window, text='Save', padx=8, pady=3, borderwidth=3, font=('times new roman', 10), command=lambda: saveContact())
-    back = Button(new_window, text='<', command=new_window.destroy)
-
+    entries = [
+        Entry(new_window, width=30),
+        Entry(new_window, width=30),
+        Entry(new_window, width=30),
+        Entry(new_window, width=30)]
     label.grid(row=0, column=0, columnspan=2)
     name.grid(row=1, column=0)
     phone.grid(row=2, column=0)
@@ -77,13 +31,17 @@ def add():
     email.grid(row=3, column=0)
     newemail.grid(row=3, column=2)
     dob.grid(row=4, column=0)
-    e1.grid(row=1, column=1)
-    e2.grid(row=2, column=1)
-    e3.grid(row=3, column=1)
-    e4.grid(row=4, column=1)
-    save.grid(row=6, column=1, columnspan=2)
+    entries[0].grid(row=1, column=1)
+    entries[1].grid(row=2, column=1)
+    entries[2].grid(row=3, column=1)
+    entries[3].grid(row=4, column=1)
+    back = Button(new_window, text='<', command=new_window.destroy)
     back.grid(row=0, column=0, sticky="nw")
-
+def add():
+    newWindow()
+    #save_contact = Button(new_window, text='Save', padx=8, pady=3, borderwidth=3, font=('times new roman', 10),
+                  # command=lambda: save(entries))
+    #save_contact.grid(row=6, column=1, columnspan=2)
 
 
 def view():
