@@ -1,10 +1,11 @@
 from pymongo.mongo_client import MongoClient
+from bson import ObjectId
 from pymongo.server_api import ServerApi
 
-uri = "mongodb+srv://admin:admin@cluster0.kdjr66w.mongodb.net/?retryWrites=true&w=majority"
+# uri = "mongodb+srv://admin:admin@cluster0.kdjr66w.mongodb.net/?retryWrites=true&w=majority"
 
 # Create a new client and connect to the server
-client = MongoClient(uri, server_api=ServerApi('1'))
+client = MongoClient()
 
 # Send a ping to confirm a successful connection
 try:
@@ -22,14 +23,14 @@ def saveContact(inp):
     __coll__.insert_one(inp)
     print('contact saved')
 
-def updateContact(inp):
-    print(f'updating contact for {inp["_id"]}')
-    __coll__.update_one({"_id": inp["_id"]}, inp)
+def updateContact(id, inp):
+    print(f'updating contact for ', id)
+    __coll__.update_one({"_id": ObjectId(id)}, {"$set": inp})
     print('contact updated')
 
-def deleteContact(inp):
-    print(f'deleting contact for {inp["_id"]}')
-    __coll__.delete_one({"_id": inp["_id"]})
+def deleteContactUsingID(id):
+    print('deleting contact for ', id)
+    __coll__.delete_one({"_id": id})
     print('contact deleted')
 
 def getContacts(query: dict):
@@ -40,9 +41,15 @@ def getContacts(query: dict):
     return data
 
 def fetchSingleContactUsingId(id):
-    query={'_id':id}
+    query={'_id': ObjectId(id)}
     return __coll__.find_one(query)
 
+
+def fetchAllNames():
+    # todo : if name not present show number
+    cur=__coll__.find({})
+    data=[doc["_id"]for doc in cur]
+    return data
 
 def listContacts(searchField: str, searchString: str):
     if searchField == "name":

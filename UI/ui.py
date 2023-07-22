@@ -9,6 +9,13 @@ def save(entries):
     print(data)
     connector.saveContact(data)
 
+def update(id, entries):
+    data = {'name': entries[0].get(), 'phone': entries[1].get(), 'email': entries[2].get(), 'dob': entries[3].get()}
+    print(data)
+    connector.updateContact(id, data)
+def delete(id, newWindow):
+    connector.deleteContactUsingID(id)
+    newWindow.destroy()
 # using this func to create a secondary contact window
 # use case: new contact, edit, view(delete)
 def newWindow(usecase: str, data: dict):
@@ -26,6 +33,11 @@ def newWindow(usecase: str, data: dict):
         Entry(new_window, width=30),
         Entry(new_window, width=30),
         Entry(new_window, width=30)]
+    entries[0].insert(0, data.get("name", ' '))
+    entries[1].insert(0, data.get("phone", ' '))
+    entries[2].insert(0, data.get("email", ' '))
+    entries[3].insert(0, data.get("dob", ' '))
+
     label.grid(row=0, column=0, columnspan=2)
     name.grid(row=1, column=0)
     phone.grid(row=2, column=0)
@@ -45,11 +57,11 @@ def newWindow(usecase: str, data: dict):
         save_button.grid(row=6, column=1, columnspan=2)
     elif usecase=='view':
         delete_button = Button(new_window, text='Delete', padx=8, pady=3, borderwidth=3, font=('times new roman', 10),
-                             command=lambda: save(entries))
-        delete_button.grid(row=6, column=1, columnspan=2)
+                             command=lambda: delete(data["_id"], new_window))
+        delete_button.grid(row=6, column=2)
         edit_button = Button(new_window, text='Edit', padx=8, pady=3, borderwidth=3, font=('times new roman', 10),
-                             command=lambda: save(entries))
-        edit_button.grid(row=6, column=1, columnspan=2)
+                             command=lambda: update(data["_id"], entries))
+        edit_button.grid(row=6, column=0)
 def add():
     newWindow("add", {})
 
@@ -58,7 +70,31 @@ def view(id):
     data=connector.fetchSingleContactUsingId(id)
     newWindow("view", data)
 
+def onselect(evt):
+    # Note here that Tkinter passes an event object to onselect()
+    w = evt.widget
 
+    index = int(w.curselection()[0])
+    value = w.get(index)
+    print('You selected item %d: "%s"' % (index, value))
+    view(value)
+
+
+
+def listOfContacts():
+    contacts=Listbox(root,
+                  bg = "grey",
+                  activestyle = 'dotbox',
+                  font = "Helvetica",
+                  fg = "yellow")
+    contactlist=connector.fetchAllNames()
+    counter=0
+    for ele in contactlist:
+        counter+=1
+        contacts.insert(counter, ele)
+    contacts.grid(row=3, columnspan=3)
+
+    contacts.bind('<<ListboxSelect>>', onselect)
 
 label = Label(root, text='Contacts', font=('times new roman', 14))
 search = Label(root, text='Search', font=('times new roman', 12))
@@ -72,5 +108,5 @@ search.grid(row=1, column=0)
 e.grid(row=1, column=1)
 add_contact.grid(row=0, column=0, columnspan=2)
 view_contact.grid(row=1, column=2)
-
+listOfContacts()
 root.mainloop()
