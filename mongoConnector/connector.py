@@ -45,10 +45,21 @@ def fetchSingleContactUsingId(id):
     return __coll__.find_one(query)
 
 
-def fetchAllNames():
+def fetchAllContacts():
     # todo : if name not present show number
     cur=__coll__.find({})
-    data=[doc["_id"]for doc in cur]
+    data=[]
+    counter=0
+    for ele in cur:
+        counter+=1
+        temp={}
+        temp['counter']= counter
+        temp["_id"]= ele["_id"]
+        temp['name']= ele["name"]
+        if temp['name']== " ":
+            temp['name']=ele['phone']
+        data.append(temp)
+    print(data)
     return data
 
 def listContacts(searchField: str, searchString: str):
