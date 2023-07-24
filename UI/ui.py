@@ -85,7 +85,6 @@ def onselect(evt):
     view(contactlist[index]['_id'])
 
 
-
 def refreshList():
     global contactslistbox
     global contactlist
@@ -95,11 +94,22 @@ def refreshList():
                               activestyle='dotbox',
                               font="Helvetica",
                               fg="yellow")
-    contactslistbox.grid(row=3, columnspan=3)
+
     contactslistbox.bind('<<ListboxSelect>>', onselect)
     contactlist= connector.fetchAllContacts()
+
+    scrollbar = Scrollbar(root, orient=VERTICAL, command=contactslistbox.yview)
+    contactslistbox.config(yscrollcommand=scrollbar.set)
+
+    contactslistbox.grid(row=2, columnspan=2, sticky=NSEW)
+    scrollbar.grid(row=2, column=2, sticky=NS)
+    root.grid_rowconfigure(0, weight=1)
+    root.grid_columnconfigure(0, weight=1)
+
     for ele in contactlist:
         contactslistbox.insert(ele['counter'],  ele['name'])
+
+
 
 
 label = Label(root, text='Contacts', font=('times new roman', 14))
