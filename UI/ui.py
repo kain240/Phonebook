@@ -9,16 +9,19 @@ def save(entries, window):
     print(data)
     connector.saveContact(data)
     window.destroy()
+    refreshContactList()
     refreshList()
 def update(id, entries, window):
     data = {'name': entries[0].get(), 'phone': entries[1].get(), 'email': entries[2].get(), 'dob': entries[3].get()}
     print(data)
     connector.updateContact(id, data)
     window.destroy()
+    refreshContactList()
     refreshList()
 def delete(id, window):
     connector.deleteContactUsingID(id)
     window.destroy()
+    refreshContactList()
     refreshList()
 # using this func to create a secondary contact window
 # use case: new contact, edit, view(delete)
@@ -68,8 +71,6 @@ def newWindow(usecase: str, data: dict):
         edit_button.grid(row=6, column=0)
 def add():
     newWindow("add", {})
-
-
 def view(id):
     data=connector.fetchSingleContactUsingId(id)
     newWindow("view", data)
@@ -84,7 +85,6 @@ def onselect(evt):
     print('You selected item %d: "%s"' % (index, contactlist[index]))
     view(contactlist[index]['_id'])
 
-
 def refreshList():
     global contactslistbox
     global contactlist
@@ -96,7 +96,7 @@ def refreshList():
                               fg="yellow")
 
     contactslistbox.bind('<<ListboxSelect>>', onselect)
-    contactlist= connector.fetchAllContacts()
+
 
     scrollbar = Scrollbar(root, orient=VERTICAL, command=contactslistbox.yview)
     contactslistbox.config(yscrollcommand=scrollbar.set)
@@ -105,32 +105,35 @@ def refreshList():
     scrollbar.grid(row=2, column=2, sticky=NS)
     root.grid_rowconfigure(0, weight=1)
     root.grid_columnconfigure(0, weight=1)
-
+    counter1=0
     for ele in contactlist:
-        contactslistbox.insert(ele['counter'],  ele['name'])
+        counter1+= 1
+        contactslistbox.insert(counter1,  ele['name'])
 
-
+def refreshContactList():
+    global contactlist
+    contactlist = connector.fetchAllContacts()
+def search():
+    search_key = e.get()
+    global contactlist
+    contactlist=connector.fetchContactUsingName(search_key) + connector.fetchContactUsingPhone(search_key)
+    refreshList()
 
 
 label = Label(root, text='Contacts', font=('times new roman', 14))
-search = Label(root, text='Search', font=('times new roman', 12))
+search_button = Button(root, text='Search', font=('times new roman', 12), command=search)
 e = Entry(root, width=30)
 e.bind()
-
-
-
 add_contact = Button(root, text='+', command= add)
-view_contact = Button(root, text='v', command=view)
-
 label.grid(row=0, column=0)
-search.grid(row=1, column=0)
+search_button.grid(row=1, column=0)
 e.grid(row=1, column=1)
-add_contact.grid(row=0, column=0, columnspan=2)
-view_contact.grid(row=1, column=2)
+add_contact.grid(row=0, column=0, columnspan=2, )
 contactslistbox = Listbox(root,
                           bg="grey",
                           activestyle='dotbox',
                           font="Helvetica",
                           fg="yellow")
+refreshContactList()
 refreshList()
 root.mainloop()

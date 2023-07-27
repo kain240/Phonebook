@@ -18,8 +18,13 @@ __db__ = client["phone_book"]
 __coll__ = __db__["contacts"]
 
 
+
 def saveContact(inp):
     print(f'saving contact for {inp["name"]}')
+    if inp['name']==' ':
+        inp['name']=''
+    if inp['phone']==' ':
+        inp['phone']=''
     __coll__.insert_one(inp)
     print('contact saved')
 
@@ -33,8 +38,8 @@ def deleteContactUsingID(id):
     __coll__.delete_one({"_id": id})
     print('contact deleted')
 
-def getContacts(query: dict):
-    cur= __coll__.find(query)
+def getContacts(query: dict, project: dict):
+    cur= __coll__.find(query, project)
     data=[]
     for ele in cur:
         data.append(ele)
@@ -44,21 +49,15 @@ def fetchSingleContactUsingId(id):
     query={'_id': ObjectId(id)}
     return __coll__.find_one(query)
 
-
 def fetchAllContacts():
-    # todo : if name not present show number
-    cur=__coll__.find({})
-    data=[]
-    counter=0
+    cur=__coll__.find({"name": {"$ne": ""}}, {"name": 1}).sort("name")
+    data= []
     for ele in cur:
-        counter+=1
-        temp={}
-        temp['counter']= counter
-        temp["_id"]= ele["_id"]
-        temp['name']= ele["name"]
-        if temp['name']== " ":
-            temp['name']=ele['phone']
-        data.append(temp)
+        data.append(ele)
+    cur = __coll__.find({"name": {"$eq": ""}}, {"phone": 1}).sort("phone")
+    for ele in cur:
+        ele['name'] = ele['phone']
+        data.append(ele)
     print(data)
     return data
 
@@ -67,19 +66,18 @@ def listContacts(searchField: str, searchString: str):
         return fetchContactUsingName(searchString)
     if searchField == "phone_number":
         return fetchContactUsingPhone(searchString)
-    if searchField == "email":
-        return fetchContactUsingEmail(searchString)
 
 def fetchContactUsingName(imp: str):
     searchQuery = {"name": {"$regex": imp}}
-    return getContacts(searchQuery)
+    return getContacts(searchQuery, {'name': 1})
 
 def fetchContactUsingPhone(imp: str):
     searchQuery = {"phone_number.$": {"$regex": imp}}
-    return getContacts(searchQuery)
+    data= []
+    cur= getContacts(searchQuery, {'phone': 1})
+    for ele in cur:
+        ele['name'] = ele['phone']
+        data.append(ele)
+    return data
 
-
-def fetchContactUsingEmail(imp: str):
-    searchQuery = {"email.$": {"$regex": imp}}
-    return getContacts(searchQuery)
 
