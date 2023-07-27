@@ -72,12 +72,14 @@ def fetchContactUsingName(imp: str):
     return getContacts(searchQuery, {'name': 1})
 
 def fetchContactUsingPhone(imp: str):
-    searchQuery = {"phone_number.$": {"$regex": imp}}
+    searchQuery = {"phone": {"$regex": imp}}
     data= []
     cur= getContacts(searchQuery, {'phone': 1})
     for ele in cur:
         ele['name'] = ele['phone']
         data.append(ele)
     return data
+
+
 
 
